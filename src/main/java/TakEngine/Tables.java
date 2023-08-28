@@ -8,20 +8,37 @@ interface ComputeTable<T> {
 
 public class Tables {
     private static final int[][][] _squaresToEdge = computeForAllBoardSizes(int[][].class, Tables::computeSquaresToEdge);
-    private static final long[][] _boundaryLineBits = computeForAllBoardSizes(long[].class, Tables::computeBoundaryLineBits);
-    private static final long[][][] _lineBits = computeForAllBoardSizes(long[][].class, Tables::computeLineBits);
-    private static final long[][][][] _lineSegmentBits = computeForAllBoardSizes(long[][][].class, Tables::computeLineSegmentBits);
-
-    public static long getLineSegmentBits(int boardSize, int square, Direction direction, int length) {
-        return _lineSegmentBits[boardSize][square][direction.ordinal()][length];
+    private static final long[][] _boundaryLines = computeForAllBoardSizes(long[].class, Tables::computeBoundaryLines);
+    private static final long[][][] _lineRays = computeForAllBoardSizes(long[][].class, Tables::computeLineRays);
+    private static final long[][][] _linesBetweenSquares = computeForAllBoardSizes(long[][].class, Tables::computeLinesBetweenSquares);
+    private static final long[][][][] _lineSegments = computeForAllBoardSizes(long[][][].class, Tables::computeLineSegments);
+    private static final long[][] _ranks = computeForAllBoardSizes(long[].class, Tables::computeRanks);
+    private static final long[][] _files = computeForAllBoardSizes(long[].class, Tables::computeFiles);
+    
+    public static int getSquaresToEdge(int boardSize, int square, Direction direction) {
+        return _squaresToEdge[boardSize][square][direction.ordinal()];
     }
 
-    public static long getLineBits(int boardSize, int square, Direction direction) {
-        return _lineBits[boardSize][square][direction.ordinal()];
+    public static long getLineSegment(int boardSize, int square, Direction direction, int length) {
+        return _lineSegments[boardSize][square][direction.ordinal()][length];
+    }
+    
+    public static long getLineBetweenSquares(int boardSize, int square, int endSquare) {
+        return _linesBetweenSquares[boardSize][square][endSquare];
     }
 
-    public static long getBoundaryLineBits(int boardSize, Direction direction) {
-        return _boundaryLineBits[boardSize][direction.ordinal()];
+    public static long getLineRay(int boardSize, int square, Direction direction) {
+        return _lineRays[boardSize][square][direction.ordinal()];
+    }
+
+    public static long getBoundaryLine(int boardSize, Direction direction) {
+        return _boundaryLines[boardSize][direction.ordinal()];
+    }
+    public static long getRank(int boardSize, int rankIndex) {
+        return _ranks[boardSize][rankIndex];
+    }
+    public static long getFile(int boardSize, int fileIndex) {
+        return _files[boardSize][fileIndex];
     }
 
     private static <T> T[] computeForAllBoardSizes(Class<T> typeClass, ComputeTable<T> computeTable) {
@@ -53,85 +70,109 @@ public class Tables {
         return squaresToEdge;
     }
 
-    private static long[] computeBoundaryLineBits(int boardSize) {
-        long[] boundaryLineBits = new long[4];
+    private static long[] computeBoundaryLines(int boardSize) {
+        long[] boundaryLine = new long[4];
         for (Direction direction : Direction.values()) {
             switch (direction) {
                 case North -> {
-                    boundaryLineBits[direction.ordinal()] = computeRankMask(0, boardSize);
+                    boundaryLine[direction.ordinal()] = getRank(boardSize, 0);
                 }
                 case West -> {
-                    boundaryLineBits[direction.ordinal()] = computeFileMask(0, boardSize);
+                    boundaryLine[direction.ordinal()] = getFile(boardSize, 0);
                 }
                 case East -> {
-                    boundaryLineBits[direction.ordinal()] = computeFileMask(boardSize - 1, boardSize);
+                    boundaryLine[direction.ordinal()] = getFile(boardSize, boardSize - 1);
                 }
                 case South -> {
-                    boundaryLineBits[direction.ordinal()] = computeRankMask(boardSize - 1, boardSize);
+                    boundaryLine[direction.ordinal()] = getRank(boardSize, boardSize - 1);
                 }
             }
         }
 
-        return boundaryLineBits;
+        return boundaryLine;
     }
 
-    private static long[][] computeLineBits(int boardSize) {
-        long[][] lineBitsArray = new long[boardSize * boardSize][4];
-        for (int square = 0; square < boardSize * boardSize; square++) {
-            long[] squareLineBits = new long[4];
+    private static long[][] computeLinesBetweenSquares(int boardSize) {
+        int squareCount = boardSize * boardSize;
+        long[][] lineRays = new long[squareCount][squareCount];
+        for (int square = 0; square < squareCount; square++) {
+            long[] lineRaysFromSquare = new long[64];
             for (Direction direction : Direction.values()) {
-                long lineBits = 0;
-                int maxSquaresToEdge = _squaresToEdge[boardSize][square][direction.ordinal()];
-                for (int squaresToEdge = 1; squaresToEdge < maxSquaresToEdge; squaresToEdge++) {
+                int maxSquaresToEdge = getSquaresToEdge(boardSize, square, direction);
+                for (int squaresToEdge = 0; squaresToEdge <= maxSquaresToEdge; squaresToEdge++) {
                     int endSquare = square + direction.getShiftAmount(boardSize) * squaresToEdge;
-                    lineBits = BitHelper.setBit(lineBits, endSquare);
+                    lineRaysFromSquare[endSquare] = getLineRay(boardSize, square, direction) ^ getLineRay(boardSize, endSquare, direction);
                 }
-                squareLineBits[direction.ordinal()] = lineBits;
             }
-            lineBitsArray[square] = squareLineBits;
+            lineRays[square] = lineRaysFromSquare;
         }
-        return lineBitsArray;
+        return lineRays;
+    }
+    private static long[][] computeLineRays(int boardSize) {
+        long[][] lineRays = new long[boardSize * boardSize][4];
+        for (int square = 0; square < boardSize * boardSize; square++) {
+            long[] lineRaysFromSquare = new long[4];
+            for (Direction direction : Direction.values()) {
+                long lineRay = 0;
+                int maxSquaresToEdge = getSquaresToEdge(boardSize, square, direction);
+                for (int squaresToEdge = 1; squaresToEdge <= maxSquaresToEdge; squaresToEdge++) {
+                    int endSquare = square + direction.getShiftAmount(boardSize) * squaresToEdge;
+                    lineRay = BitHelper.setBit(lineRay, endSquare);
+                }
+                lineRaysFromSquare[direction.ordinal()] = lineRay;
+            }
+            lineRays[square] = lineRaysFromSquare;
+        }
+        return lineRays;
     }
 
-    private static long[][][] computeLineSegmentBits(int boardSize) {
+    private static long[][][] computeLineSegments(int boardSize) {
         int maxShiftDistance = boardSize - 1;
-        long[][][] shiftLineBits = new long[boardSize * boardSize][maxShiftDistance][Direction.values().length];
+        long[][][] lineSegments = new long[boardSize * boardSize][maxShiftDistance][Direction.values().length];
         for (int square = 0; square < boardSize * boardSize; square++) {
-            long[][] squareShiftLineBits = new long[maxShiftDistance][Direction.values().length];
+            long[][] lineSegmentsFromSquare = new long[maxShiftDistance][Direction.values().length];
             for (int shiftDistance = 1; shiftDistance <= maxShiftDistance; shiftDistance++) {
-                long[] directionShiftLineBits = new long[4];
+                long[] lineSegmentsFromDirection = new long[4];
                 for (Direction direction : Direction.values()) {
-                    long shiftLineMask = 0;
+                    long lineSegment = 0;
                     int maxSquaresToEdge = _squaresToEdge[boardSize][square][direction.ordinal()];
-                    for (int squaresToEdge = 1; squaresToEdge < maxSquaresToEdge; squaresToEdge++) {
+                    for (int squaresToEdge = 1; squaresToEdge <= maxSquaresToEdge; squaresToEdge++) {
                         int actualShiftDistance = Math.min(shiftDistance, squaresToEdge);
                         int endSquare = square + direction.getShiftAmount(boardSize) * actualShiftDistance;
-                        shiftLineMask = BitHelper.setBit(shiftLineMask, endSquare);
+                        lineSegment = BitHelper.setBit(lineSegment, endSquare);
                     }
-                    directionShiftLineBits[direction.ordinal()] = shiftLineMask;
+                    lineSegmentsFromDirection[direction.ordinal()] = lineSegment;
                 }
-                squareShiftLineBits[square] = directionShiftLineBits;
+                lineSegmentsFromSquare[square] = lineSegmentsFromDirection;
             }
-            shiftLineBits[square] = squareShiftLineBits;
+            lineSegments[square] = lineSegmentsFromSquare;
         }
-        return shiftLineBits;
+        return lineSegments;
     }
 
-    private static long computeRankMask(int rank, int boardSize) {
-        long mask = 0;
-        for (int file = 0; file < boardSize; file++) {
-            int square = rank * boardSize + file;
-            mask = BitHelper.setBit(mask, square);
+    private static long[] computeRanks(int boardSize) {
+        long[] ranks = new long[boardSize];
+        for (int rankIndex = 0; rankIndex < boardSize; rankIndex++) {
+            long rank = 0;
+            for (int fileIndex = 0; fileIndex < boardSize; fileIndex++) {
+                int square = rankIndex * boardSize + fileIndex;
+                rank = BitHelper.setBit(rank, square);
+            }
+            ranks[rankIndex] = rank;
         }
-        return mask;
+        return ranks;
     }
 
-    private static long computeFileMask(int file, int boardSize) {
-        long mask = 0;
-        for (int rank = 0; rank < boardSize; rank++) {
-            int square = rank * boardSize + file;
-            mask = BitHelper.setBit(mask, square);
+    private static long[] computeFiles(int boardSize) {
+        long[] files = new long[boardSize];
+        for (int fileIndex = 0; fileIndex < boardSize; fileIndex++) {
+            long file = 0;
+            for (int rankIndex = 0; rankIndex < boardSize; rankIndex++) {
+                int square = rankIndex * boardSize + fileIndex;
+                file = BitHelper.setBit(file, square);
+            }
+            files[fileIndex] = file;
         }
-        return mask;
+        return files;
     }
 }

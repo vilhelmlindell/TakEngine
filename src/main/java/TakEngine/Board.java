@@ -6,6 +6,7 @@ import TakEngine.Moves.Movement;
 import TakEngine.Moves.Placement;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public final class Board {
     public static final int Sides = 2;
@@ -45,6 +46,11 @@ public final class Board {
 
         _moveGenerator = new MoveGenerator(this);
     }
+    
+    public void generateMoves() {
+        List<IMove> moves = _moveGenerator.generateMoves();
+        System.out.println(moves.size());
+    }
 
     public void makeMove(IMove move) {
         if (move instanceof Placement) {
@@ -61,23 +67,57 @@ public final class Board {
     }
 
     public boolean isGameWon() {
-        long controlledSquares = ControlledSquares[Side.ordinal()];
-        while (controlledSquares != 0) {
-            int square = Long.numberOfLeadingZeros(controlledSquares);
-            controlledSquares &= ~(1L << square);
+        long controlledSquares = ControlledSquares[Side.ordinal()] ^ StandingStones[Side.ordinal()];
+        
+        // Check for vertical win
+        int previousStoneSquare = 0;
+        for (int rankIndex = 0; rankIndex < Size; rankIndex++) {
+            long rank = Tables.getRank(Size, rankIndex);
+            long controlledStone = (rank & controlledSquares);
+            int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
 
-            // Stone is on left edge
-            if (square % Size == 0) {
+            // Check if rank has a controlled stone
+            if (controlledStone == 0) {
+                break;
             }
-            // Stone is on right edge
-            else if (square % Size == Size - 1) {
+            
+            int shiftedStoneSquare = stoneSquare + Direction.North.getShiftAmount(Size);
+            long stoneLine = Tables.getLineBetweenSquares(Size, previousStoneSquare, shiftedStoneSquare);
+            
+            previousStoneSquare = stoneSquare;
+            
+            // Check if the stones between this and the previous rank are connected
+            if ((stoneLine & controlledSquares) != stoneLine) {
+                break;
             }
 
-            // Stone is on top edge
-            if (square / Size == 0) {
+            if (rankIndex == Size - 1) {
+                return true;
             }
-            // Stone is on bottom edge
-            else if (square / Size == Size - 1) {
+        }
+        // Check for horizontal win
+        for (int fileIndex = 0; fileIndex < Size; fileIndex++) {
+            long file = Tables.getRank(Size, fileIndex);
+            long controlledStone = (file & controlledSquares);
+            int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
+
+            // Check if rank has a controlled stone
+            if (controlledStone == 0) {
+                break;
+            }
+
+            int shiftedStoneSquare = stoneSquare + Direction.West.getShiftAmount(Size);
+            long stoneLine = Tables.getLineBetweenSquares(Size, previousStoneSquare, shiftedStoneSquare);
+
+            previousStoneSquare = stoneSquare;
+
+            // Check if the stones between this and the previous rank are connected
+            if ((stoneLine & controlledSquares) != stoneLine) {
+                break;
+            }
+            
+            if (fileIndex == Size - 1) {
+                return true;
             }
         }
         return false;
