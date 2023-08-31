@@ -4,10 +4,10 @@ import TakEngine.Stone;
 
 public class Placement implements IMove {
     public final int Square;
-    public final Stone StoneType;
+    public final Stone Stone;
 
-    public Placement(int square, Stone stoneType) {
+    public Placement(int square, Stone stone) {
         Square = square;
-        StoneType = stoneType;
+        Stone = stone;
     }
 }

@@ -14,7 +14,7 @@ public final class Board {
     public final int Size;
     public final int SquareCount;
     public final ArrayList<Stone>[] Stones;
-    public final int[][] FlatStonesBySide;
+    public final int[][] FlatStones;
     public final long[] Capstones = new long[Sides];
     public final long[] StandingStones = new long[Sides];
     public final long[] ControlledSquares = new long[Sides];
@@ -42,7 +42,7 @@ public final class Board {
         };
 
         Stones = new ArrayList[SquareCount];
-        FlatStonesBySide = new int[Sides][SquareCount];
+        FlatStones = new int[Sides][SquareCount];
 
         _moveGenerator = new MoveGenerator(this);
     }
@@ -61,9 +61,35 @@ public final class Board {
     }
 
     private void place(Placement placement) {
+        Stones[placement.Square].add(placement.Stone);
+        ControlledSquares[Side.ordinal()] = BitHelper.setBit(ControlledSquares[Side.ordinal()], placement.Square);
+        switch (placement.Stone.getStoneType()) {
+            case FlatStone -> {
+                FlatStones[Side.ordinal()][placement.Square] = BitHelper.setBit(FlatStones[Side.ordinal()][placement.Square], Stones[placement.Square].size());
+                AvailableNormalStones[Side.ordinal()] -= 1;
+            }
+            case StandingStone ->  {
+                StandingStones[Side.ordinal()] = BitHelper.setBit(FlatStones[Side.ordinal()][placement.Square], Stones[placement.Square].size());
+                AvailableNormalStones[Side.ordinal()] -= 1;
+            }
+            case Capstone -> {
+                Capstones[Side.ordinal()] = BitHelper.setBit(FlatStones[Side.ordinal()][placement.Square], Stones[placement.Square].size());
+                AvailableCapstones[Side.ordinal()] -= 1;
+            }
+        }
     }
 
     private void move(Movement movement) {
+        int index = 1;
+        for (int stonesToLeave : movement.FlatStonesToLeave) {
+            int stonesToTake = Stones[movement.Square].size() - stonesToLeave;
+            int stonesToTakeBits = ((1 << stonesToTake) - 1) << stonesToLeave;
+            int nextSquare = movement.Square + movement.Direction.getShiftAmount(Size) * index;
+            for (Side side : TakEngine.Side.values()) {
+                nextSquarestonesToTakeBits & FlatStones[Side.ordinal()][movement.Square] << stonesToLeave;
+            }
+            index += 1;
+        }
     }
 
     public boolean isGameWon() {

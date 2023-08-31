@@ -36,4 +36,7 @@ public class BitHelper {
     public static long setBit(long value, int bitIndex) {
         return value | (1L << bitIndex);
     }
+    public static int setBit(int value, int bitIndex) {
+        return value | (1 << bitIndex);
+    }
 }
