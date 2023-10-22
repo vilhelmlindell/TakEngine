@@ -23,15 +23,15 @@ public class MoveGenerator {
 
         BitHelper.iterateBits(~_board.OccupiedSquares, _board.Size, false, square -> {
             if (_board.Turn == 0) {
-                Stone stone = new Stone(StoneType.FlatStone, _board.Side.getOppositeSide());
+                Stone stone = new Stone(StoneType.FlatStone, _board.SideToMove.getOppositeSide());
                 placements.add(new Placement(square, stone));
             } else {
-                StoneType[] stoneTypes = _board.AvailableNormalStones[_board.Side.ordinal()] != 0
+                StoneType[] stoneTypes = _board.AvailableNormalStones[_board.SideToMove.ordinal()] != 0
                         ? new StoneType[] { StoneType.FlatStone, StoneType.StandingStone }
                         : new StoneType[] { StoneType.Capstone };
 
                 for (StoneType stoneType : stoneTypes) {
-                    placements.add(new Placement(square, new Stone(stoneType, _board.Side)));
+                    placements.add(new Placement(square, new Stone(stoneType, _board.SideToMove)));
                 }
             }
         });
@@ -41,14 +41,14 @@ public class MoveGenerator {
 
     private List<IMove> generateMovements() {
         List<IMove> movements = new ArrayList<>();
-        long controlledSquares = _board.ControlledSquares[_board.Side.ordinal()];
+        long controlledSquares = _board.ControlledSquares[_board.SideToMove.ordinal()];
 
         BitHelper.iterateBits(controlledSquares, _board.Size, false, startSquare -> {
             for (Direction direction : Direction.values()) {
-                long blockers = _board.StandingStones[_board.Side.getOppositeSide().ordinal()]
-                        | _board.Capstones[_board.Side.getOppositeSide().ordinal()];
+                long blockers = _board.StandingStones[_board.SideToMove.getOppositeSide().ordinal()]
+                        | _board.Capstones[_board.SideToMove.getOppositeSide().ordinal()];
 
-                int stackSize = _board.Stones[startSquare].size();
+                int stackSize = _board.Stacks[startSquare].size();
                 List<Integer> stackTraversableSquares = getStackTraversableSquares(startSquare, direction, blockers);
                 List<List<Integer>> stackMovementCombinations = new ArrayList<>();
                 generateStackMoveCombinations(stackMovementCombinations, new ArrayList<>(), stackSize, stackTraversableSquares.size());
@@ -63,7 +63,7 @@ public class MoveGenerator {
     }
 
     private List<Integer> getStackTraversableSquares(int square, Direction direction, long blockers) {
-        int stackSize = _board.Stones[square].size();
+        int stackSize = _board.Stacks[square].size();
         long movementBits = Tables.getLineSegment(_board.Size, square, Direction.North, stackSize);
 
         if ((movementBits & blockers) != 0) {
@@ -92,3 +92,4 @@ public class MoveGenerator {
         }
     } 
 }
+
