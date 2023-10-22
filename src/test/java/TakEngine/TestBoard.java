@@ -1,9 +1,9 @@
-import org.junit.jupiter.api.BeforeEach;
+package TakEngine;
+
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
-import TakEngine.*;
 import TakEngine.Moves.*;;
 
 public class TestBoard {
@@ -23,6 +23,6 @@ public class TestBoard {
         board.Stacks[12].add(new Stone(StoneType.FlatStone, Side.White));
         board.Stacks[13].add(new Stone(StoneType.FlatStone, Side.White));
         board.Stacks[14].add(new Stone(StoneType.FlatStone, Side.White));
-        assertEquals(board.isGameWon(), true);
+        assertTrue(board.isGameWon());
     }
 }

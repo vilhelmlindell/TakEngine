@@ -6,46 +6,46 @@ interface ComputeTable<T> {
     T apply(int boardSize);
 }
 
-public class Tables {
+public final class Tables {
+    private static final long[][] _ranks = computeForAllBoardSizes(long[].class, Tables::computeRanks);
+    private static final long[][] _files = computeForAllBoardSizes(long[].class, Tables::computeFiles);
     private static final int[][][] _squaresToEdge = computeForAllBoardSizes(int[][].class, Tables::computeSquaresToEdge);
     private static final long[][] _boundaryLines = computeForAllBoardSizes(long[].class, Tables::computeBoundaryLines);
     private static final long[][][] _lineRays = computeForAllBoardSizes(long[][].class, Tables::computeLineRays);
     private static final long[][][] _linesBetweenSquares = computeForAllBoardSizes(long[][].class, Tables::computeLinesBetweenSquares);
     private static final long[][][][] _lineSegments = computeForAllBoardSizes(long[][][].class, Tables::computeLineSegments);
-    private static final long[][] _ranks = computeForAllBoardSizes(long[].class, Tables::computeRanks);
-    private static final long[][] _files = computeForAllBoardSizes(long[].class, Tables::computeFiles);
-    
+
     public static int getSquaresToEdge(int boardSize, int square, Direction direction) {
-        return _squaresToEdge[boardSize][square][direction.ordinal()];
+        return _squaresToEdge[boardSize - 3][square][direction.ordinal()];
     }
 
     public static long getLineSegment(int boardSize, int square, Direction direction, int length) {
-        return _lineSegments[boardSize][square][direction.ordinal()][length];
+        return _lineSegments[boardSize - 3][square][direction.ordinal()][length - 1];
     }
     
     public static long getLineBetweenSquares(int boardSize, int square, int endSquare) {
-        return _linesBetweenSquares[boardSize][square][endSquare];
+        return _linesBetweenSquares[boardSize - 3][square][endSquare];
     }
 
     public static long getLineRay(int boardSize, int square, Direction direction) {
-        return _lineRays[boardSize][square][direction.ordinal()];
+        return _lineRays[boardSize - 3][square][direction.ordinal()];
     }
 
     public static long getBoundaryLine(int boardSize, Direction direction) {
-        return _boundaryLines[boardSize][direction.ordinal()];
+        return _boundaryLines[boardSize - 3][direction.ordinal()];
     }
     public static long getRank(int boardSize, int rankIndex) {
-        return _ranks[boardSize][rankIndex];
+        return _ranks[boardSize - 3][rankIndex];
     }
     public static long getFile(int boardSize, int fileIndex) {
-        return _files[boardSize][fileIndex];
+        return _files[boardSize - 3][fileIndex];
     }
 
     private static <T> T[] computeForAllBoardSizes(Class<T> typeClass, ComputeTable<T> computeTable) {
         @SuppressWarnings("unchecked")
-        T[] array = (T[]) Array.newInstance(typeClass, 8);
+        T[] array = (T[]) Array.newInstance(typeClass, 6);
         for (int boardSize = 3; boardSize <= 8; boardSize++) {
-            array[boardSize] = computeTable.apply(boardSize);
+            array[boardSize - 3] = computeTable.apply(boardSize);
         }
         return array;
     }
@@ -130,20 +130,20 @@ public class Tables {
         int maxShiftDistance = boardSize - 1;
         long[][][] lineSegments = new long[boardSize * boardSize][maxShiftDistance][Direction.values().length];
         for (int square = 0; square < boardSize * boardSize; square++) {
-            long[][] lineSegmentsFromSquare = new long[maxShiftDistance][Direction.values().length];
-            for (int shiftDistance = 1; shiftDistance <= maxShiftDistance; shiftDistance++) {
-                long[] lineSegmentsFromDirection = new long[4];
-                for (Direction direction : Direction.values()) {
+            long[][] lineSegmentsFromSquare = new long[Direction.values().length][maxShiftDistance];
+            for (Direction direction : Direction.values()) {
+                long[] lineSegmentsFromDirection = new long[maxShiftDistance];
+                for (int shiftDistance = 1; shiftDistance <= maxShiftDistance; shiftDistance++) {
                     long lineSegment = 0;
-                    int maxSquaresToEdge = _squaresToEdge[boardSize][square][direction.ordinal()];
+                    int maxSquaresToEdge = getSquaresToEdge(boardSize, square, direction);
                     for (int squaresToEdge = 1; squaresToEdge <= maxSquaresToEdge; squaresToEdge++) {
                         int actualShiftDistance = Math.min(shiftDistance, squaresToEdge);
                         int endSquare = square + direction.getShiftAmount(boardSize) * actualShiftDistance;
                         lineSegment = BitHelper.setBit(lineSegment, endSquare);
                     }
-                    lineSegmentsFromDirection[direction.ordinal()] = lineSegment;
+                    lineSegmentsFromDirection[shiftDistance - 1] = lineSegment;
                 }
-                lineSegmentsFromSquare[square] = lineSegmentsFromDirection;
+                lineSegmentsFromSquare[direction.ordinal()] = lineSegmentsFromDirection;
             }
             lineSegments[square] = lineSegmentsFromSquare;
         }

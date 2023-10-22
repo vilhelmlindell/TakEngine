@@ -165,12 +165,26 @@ public final class Board {
             if ((stoneLine & controlledSquares) != stoneLine) {
                 break;
             }
-            
+
             if (fileIndex == Size - 1) {
                 return true;
             }
         }
         return false;
+    }
+
+    public static String bitboardToString(long bitboard, int boardSize) {
+        StringBuilder string = new StringBuilder();
+        for (int i = 0; i < boardSize * boardSize; i++) {
+            long bit = (bitboard >> i) & 1;
+            if (bit != 0) {
+                string.append('0');
+            }
+            if (i % boardSize == 0) {
+                string.append('\n');
+            }
+        }
+        return string.toString();
     }
 
     @Override
