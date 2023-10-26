@@ -39,4 +39,10 @@ public class BitHelper {
     public static int setBit(int value, int bitIndex) {
         return value | (1 << bitIndex);
     }
+    public static long flipBit(long value, int bitIndex) {
+        return value ^ (1L << bitIndex);
+    }
+    public static int flipBit(int value, int bitIndex) {
+        return value ^ (1 << bitIndex);
+    }
 }

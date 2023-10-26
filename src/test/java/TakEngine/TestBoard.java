@@ -18,11 +18,27 @@ public class TestBoard {
     @Test
     public void testGameWin() {
         Board board = new Board(5);
-        board.Stacks[10].add(new Stone(StoneType.FlatStone, Side.White));
-        board.Stacks[11].add(new Stone(StoneType.FlatStone, Side.White));
-        board.Stacks[12].add(new Stone(StoneType.FlatStone, Side.White));
-        board.Stacks[13].add(new Stone(StoneType.FlatStone, Side.White));
-        board.Stacks[14].add(new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(10, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(11, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(12, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(13, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(14, new Stone(StoneType.FlatStone, Side.White));
+        System.out.println("Board:");
+        System.out.println(Board.bitboardToString(board.OccupiedSquares, board.Size));
         assertTrue(board.isGameWon());
+    }
+    
+    @Test
+    public void testPlacement() {
+        Board board = new Board(5);
+        Stone stone = new Stone(StoneType.FlatStone, Side.White);
+        Placement placement = new Placement(13, stone);
+        board.place(placement);
+        assertEquals(board.Stacks[13].get(0), stone);
+        assertEquals(board.FlatStones[stone.getSide().ordinal()][13], 1);
+        assertEquals(board.);
+    }
+    @Test
+    public void testMovement() {
     }
 }
