@@ -16,18 +16,31 @@ public class TestBoard {
     }
 
     @Test
-    public void testGameWin() {
+    public void testHorizontalGameWin() {
         Board board = new Board(5);
         board.addStone(10, new Stone(StoneType.FlatStone, Side.White));
         board.addStone(11, new Stone(StoneType.FlatStone, Side.White));
-        board.addStone(12, new Stone(StoneType.FlatStone, Side.White));
-        board.addStone(13, new Stone(StoneType.FlatStone, Side.White));
-        board.addStone(14, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(16, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(17, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(18, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(19, new Stone(StoneType.FlatStone, Side.White));
         System.out.println("Board:");
         System.out.println(Board.bitboardToString(board.OccupiedSquares, board.Size));
         assertTrue(board.isGameWon());
     }
-    
+    @Test
+    public void testVerticalGameWin() {
+        Board board = new Board(5);
+        board.addStone(3, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(8, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(14, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(19, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(24, new Stone(StoneType.FlatStone, Side.White));
+        System.out.println("Board:");
+        System.out.println(Board.bitboardToString(board.OccupiedSquares, board.Size));
+        assertTrue(board.isGameWon());
+    }
     @Test
     public void testPlacement() {
         Board board = new Board(5);
@@ -36,7 +49,6 @@ public class TestBoard {
         board.place(placement);
         assertEquals(board.Stacks[13].get(0), stone);
         assertEquals(board.FlatStones[stone.getSide().ordinal()][13], 1);
-        assertEquals(board.);
     }
     @Test
     public void testMovement() {

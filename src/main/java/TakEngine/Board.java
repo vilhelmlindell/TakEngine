@@ -67,7 +67,6 @@ public final class Board {
     }
     public void addStones(int square, ArrayList<Stone> stones) {
         Stacks[square].addAll(stones);
-        ControlledSquares[SideToMove.ordinal()] = BitHelper.setBit(ControlledSquares[SideToMove.ordinal()], square);
         updateBitboards(square, stones.get(stones.size() - 1));
     }
     public void addStone(int square, Stone stone) {
@@ -84,6 +83,7 @@ public final class Board {
     }
     private void updateBitboards(int square, Stone stone) {
         ControlledSquares[SideToMove.ordinal()] = BitHelper.flipBit(ControlledSquares[stone.getSide().ordinal()], square);
+        OccupiedSquares = BitHelper.flipBit(OccupiedSquares, square);
         switch (stone.getStoneType()) {
             case FlatStone -> {
                 FlatStones[SideToMove.ordinal()][square] = BitHelper.flipBit(FlatStones[stone.getSide().ordinal()][square], Stacks[square].size() - 1);
@@ -106,7 +106,6 @@ public final class Board {
             AvailableNormalStones[placement.Stone.getSide().ordinal()] -= 1;
         }
     }
-
     public void move(Movement movement) {
         List<Stone> stonesToTake = removeStones(movement.Square, Stacks[movement.Square].size() - movement.FlatStonesToLeave.get(0));
         int squareCount = 1;
@@ -135,6 +134,9 @@ public final class Board {
             }
             
             int shiftedStoneSquare = stoneSquare + Direction.North.getShiftAmount(Size);
+            if (shiftedStoneSquare < 0) {
+                return true;
+            }
             long stoneLine = Tables.getLineBetweenSquares(Size, previousStoneSquare, shiftedStoneSquare);
             
             previousStoneSquare = stoneSquare;
@@ -150,9 +152,11 @@ public final class Board {
         }
         // Check for horizontal win
         for (int fileIndex = 0; fileIndex < Size; fileIndex++) {
-            long file = Tables.getRank(Size, fileIndex);
+            long file = Tables.getFile(Size, fileIndex);
             long controlledStone = (file & controlledSquares);
             int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
+            System.out.println(bitboardToString(controlledStone, Size));
+            System.out.println(bitboardToString(file, Size));
 
             // Check if rank has a controlled stone
             if (controlledStone == 0) {
