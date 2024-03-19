@@ -43,7 +43,7 @@ public class MoveGenerator {
         List<IMove> movements = new ArrayList<>();
         long controlledSquares = _board.ControlledSquares[_board.SideToMove.ordinal()];
 
-        System.out.println("Banana");
+        //System.out.println(BitHelper.bitboardToString(controlledSquares, _board.Size));
         BitHelper.iterateBits(controlledSquares, _board.Size, false, startSquare -> {
             for (Direction direction : Direction.values()) {
                 long blockers = _board.StandingStones[_board.SideToMove.getOppositeSide().ordinal()]
@@ -54,8 +54,7 @@ public class MoveGenerator {
                 List<List<Integer>> stackMovementCombinations = new ArrayList<>();
                 generateStackMoveCombinations(stackMovementCombinations, new ArrayList<>(), stackSize, stackTraversableSquares.size());
                 System.out.println(stackTraversableSquares);
-                System.out.println(stackMovementCombinations);
-                System.out.println("Test");
+                //System.out.println(stackMovementCombinations);
 
                 for (List<Integer> stackMovement : stackMovementCombinations) {
                     movements.add(new Movement(startSquare, direction, stackMovement));

@@ -36,6 +36,9 @@ public class BitHelper {
     public static long setBit(long value, int bitIndex) {
         return value | (1L << bitIndex);
     }
+    public static long clearBit(long value, int bitIndex) {
+        return value & (1L << bitIndex);
+    }
     public static int setBit(int value, int bitIndex) {
         return value | (1 << bitIndex);
     }
@@ -44,5 +47,23 @@ public class BitHelper {
     }
     public static int flipBit(int value, int bitIndex) {
         return value ^ (1 << bitIndex);
+    }
+
+    public static String bitboardToString(long bitboard, int boardSize) {
+        StringBuilder string = new StringBuilder();
+        for (int i = 0; i < boardSize * boardSize; i++) {
+            if (i % boardSize == 0) {
+                string.append('\n');
+            }
+
+            long bit = (bitboard >> i) & 1;
+            if (bit == 0) {
+                string.append('0');
+            }
+            else {
+                string.append('1');
+            }
+        }
+        return string.toString();
     }
 }

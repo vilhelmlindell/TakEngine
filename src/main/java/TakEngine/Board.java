@@ -67,7 +67,7 @@ public final class Board {
     }
     public void addStones(int square, ArrayList<Stone> stones) {
         Stacks[square].addAll(stones);
-        updateBitboards(square, stones.get(stones.size() - 1));
+        updateBitboards(square, stones.get(stones.size() - 1), false);
     }
     public void addStone(int square, Stone stone) {
         // NOTE: might be ineffective and need to change later
@@ -78,11 +78,16 @@ public final class Board {
     }
     public ArrayList<Stone> removeStones(int square, int count) {
         var removedStones = Stacks[square].subList(Stacks[square].size() - count, Stacks[square].size());
-        updateBitboards(square, Stacks[square].get(Stacks[square].size() - 1));
+        updateBitboards(square, Stacks[square].get(Stacks[square].size() - 1), true);
         return (ArrayList<Stone>) removedStones;
     }
-    private void updateBitboards(int square, Stone stone) {
-        ControlledSquares[SideToMove.ordinal()] = BitHelper.flipBit(ControlledSquares[stone.getSide().ordinal()], square);
+    private void updateBitboards(int square, Stone stone, boolean isRemoval) {
+        if (isRemoval) {
+            ControlledSquares[SideToMove.ordinal()] = BitHelper.clearBit(ControlledSquares[stone.getSide().ordinal()], square);
+        }
+        else {
+            ControlledSquares[SideToMove.ordinal()] = BitHelper.setBit(ControlledSquares[stone.getSide().ordinal()], square);
+        }
         OccupiedSquares = BitHelper.flipBit(OccupiedSquares, square);
         switch (stone.getStoneType()) {
             case FlatStone -> {
@@ -155,8 +160,8 @@ public final class Board {
             long file = Tables.getFile(Size, fileIndex);
             long controlledStone = (file & controlledSquares);
             int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
-            System.out.println(bitboardToString(controlledStone, Size));
-            System.out.println(bitboardToString(file, Size));
+            System.out.println(BitHelper.bitboardToString(controlledStone, Size));
+            System.out.println(BitHelper.bitboardToString(file, Size));
 
             // Check if rank has a controlled stone
             if (controlledStone == 0) {
@@ -180,23 +185,6 @@ public final class Board {
         return false;
     }
 
-    public static String bitboardToString(long bitboard, int boardSize) {
-        StringBuilder string = new StringBuilder();
-        for (int i = 0; i < boardSize * boardSize; i++) {
-            if (i % boardSize == 0) {
-                string.append('\n');
-            }
-            
-            long bit = (bitboard >> i) & 1;
-            if (bit == 0) {
-                string.append('0');
-            }
-            else {
-                string.append('1');
-            }
-        }
-        return string.toString();
-    }
 
     @Override
     public String toString() {
