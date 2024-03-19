@@ -52,5 +52,18 @@ public class TestBoard {
     }
     @Test
     public void testMovement() {
+        Board board = new Board(5);
+        board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+        board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+        List<IMove> movements = board.generateMoves();
+        System.out.println(Board.bitboardToString(board.OccupiedSquares, board.Size));
+        for (IMove move : movements) {
+            if (!(move instanceof Placement)) {
+                System.out.println(move.toString());
+            }
+        }
+        assertTrue(true);
     }
 }

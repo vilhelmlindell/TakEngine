@@ -14,4 +14,13 @@ public class Movement implements IMove {
         Direction = direction;
         FlatStonesToLeave = flatStonesToLeave;
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Square: ").append(Square).append("\n");
+        sb.append("Direction: ").append(Direction).append("\n");
+        sb.append("Flat Stones to Leave: ").append(FlatStonesToLeave).append("\n");
+        return sb.toString(); 
+    }
 }

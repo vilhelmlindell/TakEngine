@@ -10,4 +10,13 @@ public class Placement implements IMove {
         Square = square;
         Stone = stone;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Square: ").append(Square).append("\n");
+        sb.append("Side: ").append(Stone.getSide()).append("\n");
+        sb.append("Stoneype: ").append(Stone.getStoneType()).append("\n");
+        return sb.toString();
+    }
 }

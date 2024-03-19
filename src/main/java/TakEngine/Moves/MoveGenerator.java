@@ -43,6 +43,7 @@ public class MoveGenerator {
         List<IMove> movements = new ArrayList<>();
         long controlledSquares = _board.ControlledSquares[_board.SideToMove.ordinal()];
 
+        System.out.println("Banana");
         BitHelper.iterateBits(controlledSquares, _board.Size, false, startSquare -> {
             for (Direction direction : Direction.values()) {
                 long blockers = _board.StandingStones[_board.SideToMove.getOppositeSide().ordinal()]
@@ -52,6 +53,9 @@ public class MoveGenerator {
                 List<Integer> stackTraversableSquares = getStackTraversableSquares(startSquare, direction, blockers);
                 List<List<Integer>> stackMovementCombinations = new ArrayList<>();
                 generateStackMoveCombinations(stackMovementCombinations, new ArrayList<>(), stackSize, stackTraversableSquares.size());
+                System.out.println(stackTraversableSquares);
+                System.out.println(stackMovementCombinations);
+                System.out.println("Test");
 
                 for (List<Integer> stackMovement : stackMovementCombinations) {
                     movements.add(new Movement(startSquare, direction, stackMovement));
@@ -85,7 +89,7 @@ public class MoveGenerator {
             return;
         }
 
-        for (int stonesToLeave = 0; stonesToLeave <= stackSize; stonesToLeave++) {
+        for (int stonesToLeave = 1; stonesToLeave <= stackSize; stonesToLeave++) {
             currentCombination.add(stonesToLeave);
             generateStackMoveCombinations(combinations, currentCombination, stackSize - stonesToLeave, possibleTraversableSquares - 1);
             currentCombination.remove(currentCombination.size() - 1); // Backtrack
