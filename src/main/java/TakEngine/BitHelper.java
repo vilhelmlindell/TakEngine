@@ -5,21 +5,16 @@ import java.util.function.IntConsumer;
 
 public class BitHelper {
     public static void iterateBits(long value, int boardSize, boolean reverse, IntConsumer consumer) {
-        int squareCount = boardSize * boardSize;
         while (value != 0) {
+            int square;
             if (reverse) {
-                int square = Long.numberOfLeadingZeros(value) - (64 - squareCount);
-                consumer.accept(square);
+                square = 64 - Long.numberOfLeadingZeros(value);
+                value ^= Long.highestOneBit(value);
             } else {
-                int square = Long.numberOfTrailingZeros(value);
-                if (square < squareCount) {
-                    consumer.accept(square);
-                }
-                else {
-                    break;
-                }
+                square = Long.numberOfTrailingZeros(value);
+                value ^= Long.lowestOneBit(value);
             }
-            value ^= Long.lowestOneBit(value);
+            consumer.accept(square);
         }
     }
 

@@ -43,12 +43,13 @@ public class MoveGenerator {
         List<IMove> movements = new ArrayList<>();
         long controlledSquares = _board.ControlledSquares[_board.SideToMove.ordinal()];
 
-        //System.out.println(BitHelper.bitboardToString(controlledSquares, _board.Size));
+        System.out.println(BitHelper.bitboardToString(controlledSquares, _board.Size));
         BitHelper.iterateBits(controlledSquares, _board.Size, false, startSquare -> {
+            long blockers = _board.StandingStones[_board.SideToMove.getOppositeSide().ordinal()]
+                    | _board.Capstones[_board.SideToMove.getOppositeSide().ordinal()];
+            System.out.println("Blockers:");
+            System.out.println(BitHelper.bitboardToString(blockers, _board.Size));
             for (Direction direction : Direction.values()) {
-                long blockers = _board.StandingStones[_board.SideToMove.getOppositeSide().ordinal()]
-                        | _board.Capstones[_board.SideToMove.getOppositeSide().ordinal()];
-
                 int stackSize = _board.Stacks[startSquare].size();
                 List<Integer> stackTraversableSquares = getStackTraversableSquares(startSquare, direction, blockers);
                 List<List<Integer>> stackMovementCombinations = new ArrayList<>();
@@ -67,7 +68,8 @@ public class MoveGenerator {
 
     private List<Integer> getStackTraversableSquares(int square, Direction direction, long blockers) {
         int stackSize = _board.Stacks[square].size();
-        long movementBits = Tables.getLineSegment(_board.Size, square, Direction.North, stackSize);
+        long movementBits = Tables.getLineSegment(_board.Size, square, direction, stackSize);
+        System.out.println(BitHelper.bitboardToString(movementBits, _board.Size));
 
         if ((movementBits & blockers) != 0) {
             int blockerIndex = direction == Direction.North || direction == Direction.West
