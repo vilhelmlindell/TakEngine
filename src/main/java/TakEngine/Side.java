@@ -1,16 +1,15 @@
 package TakEngine;
 
 public enum Side {
-    White,
-    Black;
+  White,
+  Black;
 
-    // Method to get the opposite side
-    public Side getOppositeSide() {
-        if (this == White) {
-            return Black;
-        } else {
-            return White;
-        }
+  // Method to get the opposite side
+  public Side getOppositeSide() {
+    if (this == White) {
+      return Black;
+    } else {
+      return White;
     }
-
+  }
 }
