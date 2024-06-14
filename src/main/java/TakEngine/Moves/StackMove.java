@@ -18,7 +18,11 @@ public class StackMove implements IMove {
     StringBuilder sb = new StringBuilder();
     sb.append("Square: ").append(Square).append("\n");
     sb.append("Direction: ").append(Direction).append("\n");
-    sb.append("Drop Combination: ").append(DropCombination).append("\n");
+    sb.append("Drop Combination: ");
+    for (int dropCount : DropCombination) {
+      sb.append(dropCount);
+    }
+    sb.append("\n");
     return sb.toString();
   }
 }

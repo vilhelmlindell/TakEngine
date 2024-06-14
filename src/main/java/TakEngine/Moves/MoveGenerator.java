@@ -62,8 +62,10 @@ public class MoveGenerator {
           // System.out.println(BitHelper.bitboardToString(blockers, _board.Size));
           for (Direction direction : Direction.values()) {
             DropInfo dropInfo = getDropInfo(square, direction);
+            if (dropInfo.numTraversable() == 0) continue;
             ArrayList<DropCombination> dropCombinations =
                 Tables.getDropCombinations(
+                    _board.Size,
                     _board.Stacks[square].size(),
                     dropInfo.numTraversable(),
                     dropInfo.includeFlattening());

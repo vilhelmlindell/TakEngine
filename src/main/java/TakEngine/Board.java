@@ -158,13 +158,15 @@ public final class Board {
     }
   }
 
-  public boolean isGameWon() {
+  public boolean getLongestLineLength() {
     long controlledSquares =
         ControlledSquares[SideToMove.ordinal()] ^ StandingStones[SideToMove.ordinal()];
 
+    // System.out.println("1");
     // Check for vertical win
     int previousStoneSquare = 0;
     for (int rankIndex = 0; rankIndex < Size; rankIndex++) {
+      // System.out.println("2");
       long rank = Tables.getRank(Size, rankIndex);
       long controlledStone = (rank & controlledSquares);
       int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
@@ -174,11 +176,13 @@ public final class Board {
         break;
       }
 
+      // System.out.println("5");
       int shiftedStoneSquare = stoneSquare + Direction.North.getShiftAmount(Size);
       if (shiftedStoneSquare < 0) {
         return true;
       }
       long stoneLine = Tables.getLineBetweenSquares(Size, previousStoneSquare, shiftedStoneSquare);
+      // System.out.println("4");
 
       previousStoneSquare = stoneSquare;
 
@@ -193,11 +197,80 @@ public final class Board {
     }
     // Check for horizontal win
     for (int fileIndex = 0; fileIndex < Size; fileIndex++) {
+      // System.out.println("3");
       long file = Tables.getFile(Size, fileIndex);
       long controlledStone = (file & controlledSquares);
       int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
-      System.out.println(BitHelper.bitboardToString(controlledStone, Size));
-      System.out.println(BitHelper.bitboardToString(file, Size));
+      // System.out.println(BitHelper.bitboardToString(controlledStone, Size));
+      // System.out.println(BitHelper.bitboardToString(file, Size));
+
+      // Check if rank has a controlled stone
+      if (controlledStone == 0) {
+        break;
+      }
+
+      int shiftedStoneSquare = stoneSquare + Direction.West.getShiftAmount(Size);
+      long stoneLine = Tables.getLineBetweenSquares(Size, previousStoneSquare, shiftedStoneSquare);
+
+      previousStoneSquare = stoneSquare;
+
+      // Check if the stones between this and the previous rank are connected
+      if ((stoneLine & controlledSquares) != stoneLine) {
+        break;
+      }
+
+      if (fileIndex == Size - 1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public boolean isGameWon() {
+    long controlledSquares =
+        ControlledSquares[SideToMove.ordinal()] ^ StandingStones[SideToMove.ordinal()];
+
+    // System.out.println("1");
+    // Check for vertical win
+    int previousStoneSquare = 0;
+    for (int rankIndex = 0; rankIndex < Size; rankIndex++) {
+      // System.out.println("2");
+      long rank = Tables.getRank(Size, rankIndex);
+      long controlledStone = (rank & controlledSquares);
+      int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
+
+      // Check if rank has a controlled stone
+      if (controlledStone == 0) {
+        break;
+      }
+
+      // System.out.println("5");
+      int shiftedStoneSquare = stoneSquare + Direction.North.getShiftAmount(Size);
+      if (shiftedStoneSquare < 0) {
+        return true;
+      }
+      long stoneLine = Tables.getLineBetweenSquares(Size, previousStoneSquare, shiftedStoneSquare);
+      // System.out.println("4");
+
+      previousStoneSquare = stoneSquare;
+
+      // Check if the stones between this and the previous rank are connected
+      if ((stoneLine & controlledSquares) != stoneLine) {
+        break;
+      }
+
+      if (rankIndex == Size - 1) {
+        return true;
+      }
+    }
+    // Check for horizontal win
+    for (int fileIndex = 0; fileIndex < Size; fileIndex++) {
+      // System.out.println("3");
+      long file = Tables.getFile(Size, fileIndex);
+      long controlledStone = (file & controlledSquares);
+      int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
+      // System.out.println(BitHelper.bitboardToString(controlledStone, Size));
+      // System.out.println(BitHelper.bitboardToString(file, Size));
 
       // Check if rank has a controlled stone
       if (controlledStone == 0) {

@@ -57,8 +57,10 @@ public final class Tables {
   }
 
   public static ArrayList<DropCombination> getDropCombinations(
-      int stackSize, int numSquares, boolean includeFlattening) {
-    return _dropCombinations[stackSize][numSquares][includeFlattening ? 1 : 0];
+      int boardSize, int stackSize, int numTraversable, boolean includeFlattening) {
+    // The max carry limit is equal to the size of the board
+    int correctStackSize = Math.min(stackSize - 1, boardSize);
+    return _dropCombinations[correctStackSize][numTraversable - 1][includeFlattening ? 1 : 0];
   }
 
   private static <T> T[] computeForAllBoardSizes(Class<T> typeClass, ComputeTable<T> computeTable) {
@@ -204,7 +206,9 @@ public final class Tables {
     @SuppressWarnings("unchecked")
     ArrayList<DropCombination>[][][] allDropCombinations = new ArrayList[8][8][2];
     for (int stackSize = 1; stackSize <= 8; stackSize++) {
-      for (int numTraversable = 1; numTraversable <= Math.max(stackSize - 1, 1); numTraversable++) {
+      for (int numTraversable = 1;
+          numTraversable <= Math.min(Math.max(stackSize, 1), 7);
+          numTraversable++) {
         for (final boolean includeFlattening : new boolean[] {false, true}) {
           List<List<Integer>> combinations = new ArrayList<>();
           generateStackMoveCombinations(
@@ -215,7 +219,7 @@ public final class Tables {
                   .map(DropCombination::new)
                   .collect(Collectors.toCollection(ArrayList::new));
 
-          allDropCombinations[stackSize][numTraversable][includeFlattening ? 1 : 0] =
+          allDropCombinations[stackSize - 1][numTraversable - 1][includeFlattening ? 1 : 0] =
               dropCombinations;
         }
       }
@@ -236,14 +240,15 @@ public final class Tables {
     // The last traversable square is a standing stone which can be flattened
     if (includeFlattening && numTraversable == 1) {
       currentCombination.add(1);
+      combinations.add(currentCombination);
+      return;
     }
 
-    int startIndex = currentCombination.isEmpty() ? 0 : 1;
-    for (int stonesToLeave = startIndex; stonesToLeave <= stackSize; stonesToLeave++) {
-      currentCombination.add(stonesToLeave);
+    for (int dropCount = 1; dropCount <= stackSize; dropCount++) {
+      currentCombination.add(dropCount);
       combinations.add(new ArrayList<>(currentCombination));
       generateStackMoveCombinations(
-          stackSize - stonesToLeave,
+          stackSize - dropCount,
           numTraversable - 1,
           includeFlattening,
           currentCombination,

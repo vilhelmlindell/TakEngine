@@ -18,7 +18,7 @@ public class DropCombination implements Iterable<Integer> {
   }
 
   public int get(int index) {
-    return (_data >> (3 * index)) & ~(0b111);
+    return (_data >> (3 * index)) & (0b111);
   }
 
   @Override

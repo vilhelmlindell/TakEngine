@@ -1,7 +1,7 @@
 package TakEngine;
 
-import java.net.*;
 import java.io.*;
+import java.net.*;
 
 public class TakClient {
   public static final String SERVER_NAME = "playtak.com";

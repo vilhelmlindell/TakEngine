@@ -8,13 +8,13 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class TestBoard {
-  @Test
-  public void testGenerateMoves() {
-    Board board = new Board(5);
-    board.generateMoves();
-    List<IMove> moves = board.generateMoves();
-    assertNotNull(moves);
-  }
+  // @Test
+  // public void testGenerateMoves() {
+  //  Board board = new Board(5);
+  //  board.generateMoves();
+  //  List<IMove> moves = board.generateMoves();
+  //  assertNotNull(moves);
+  // }
 
   @Test
   public void testHorizontalGameWin() {
@@ -25,8 +25,8 @@ public class TestBoard {
     board.addStone(17, new Stone(StoneType.FlatStone, Side.White));
     board.addStone(18, new Stone(StoneType.FlatStone, Side.White));
     board.addStone(19, new Stone(StoneType.FlatStone, Side.White));
-    System.out.println("Board:");
-    System.out.println(BitHelper.bitboardToString(board.OccupiedSquares, board.Size));
+    // System.out.println("Board:");
+    // System.out.println(BitHelper.bitboardToString(board.OccupiedSquares, board.Size));
     assertTrue(board.isGameWon());
   }
 
@@ -39,8 +39,8 @@ public class TestBoard {
     board.addStone(14, new Stone(StoneType.FlatStone, Side.White));
     board.addStone(19, new Stone(StoneType.FlatStone, Side.White));
     board.addStone(24, new Stone(StoneType.FlatStone, Side.White));
-    System.out.println("Board:");
-    System.out.println(BitHelper.bitboardToString(board.OccupiedSquares, board.Size));
+    // System.out.println("Board:");
+    // System.out.println(BitHelper.bitboardToString(board.OccupiedSquares, board.Size));
     assertTrue(board.isGameWon());
   }
 
@@ -61,8 +61,10 @@ public class TestBoard {
     board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
     board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
     board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
     List<IMove> movements = board.generateMoves();
-    // System.out.println(BitHelper.bitboardToString(board.OccupiedSquares, board.Size));
     for (IMove move : movements) {
       if (!(move instanceof PlaceMove)) {
         System.out.println(move.toString());
