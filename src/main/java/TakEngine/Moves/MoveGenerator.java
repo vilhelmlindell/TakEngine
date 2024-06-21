@@ -3,13 +3,15 @@ package TakEngine.Moves;
 import TakEngine.BitHelper;
 import TakEngine.Board;
 import TakEngine.Direction;
+import TakEngine.Side;
 import TakEngine.Stone;
 import TakEngine.StoneType;
 import TakEngine.Tables;
 import java.util.ArrayList;
 import java.util.List;
 
-record DropInfo(int numTraversable, boolean includeFlattening) {}
+record DropInfo(int numTraversable, boolean includeFlattening) {
+}
 
 public class MoveGenerator {
   private final Board _board;
@@ -32,14 +34,17 @@ public class MoveGenerator {
         ~_board.OccupiedSquares,
         false,
         square -> {
-          if (_board.Turn == 0) {
+          if (_board.Turn == 0 || _board.Turn == 1) {
             Stone stone = new Stone(StoneType.FlatStone, _board.SideToMove.getOppositeSide());
             placements.add(new PlaceMove(square, stone));
           } else {
-            StoneType[] stoneTypes =
-                _board.AvailableNormalStones[_board.SideToMove.ordinal()] != 0
-                    ? new StoneType[] {StoneType.FlatStone, StoneType.StandingStone}
-                    : new StoneType[] {StoneType.Capstone};
+            if (!BitHelper.isBitSet(_board.OccupiedSquares, square)) {
+              return;
+            }
+
+            StoneType[] stoneTypes = _board.AvailableNormalStones[_board.SideToMove.ordinal()] != 0
+                ? new StoneType[] { StoneType.FlatStone, StoneType.StandingStone }
+                : new StoneType[] { StoneType.Capstone };
 
             for (StoneType stoneType : stoneTypes) {
               placements.add(new PlaceMove(square, new Stone(stoneType, _board.SideToMove)));
@@ -54,7 +59,8 @@ public class MoveGenerator {
     List<IMove> stackMoves = new ArrayList<>();
     long controlledSquares = _board.ControlledSquares[_board.SideToMove.ordinal()];
 
-    // System.out.println(BitHelper.bitboardToString(controlledSquares, _board.Size));
+    // System.out.println(BitHelper.bitboardToString(controlledSquares,
+    // _board.Size));
     BitHelper.iterateBits(
         controlledSquares,
         false,
@@ -62,13 +68,13 @@ public class MoveGenerator {
           // System.out.println(BitHelper.bitboardToString(blockers, _board.Size));
           for (Direction direction : Direction.values()) {
             DropInfo dropInfo = getDropInfo(square, direction);
-            if (dropInfo.numTraversable() == 0) continue;
-            ArrayList<DropCombination> dropCombinations =
-                Tables.getDropCombinations(
-                    _board.Size,
-                    _board.Stacks[square].size(),
-                    dropInfo.numTraversable(),
-                    dropInfo.includeFlattening());
+            if (dropInfo.numTraversable() == 0)
+              continue;
+            ArrayList<DropCombination> dropCombinations = Tables.getDropCombinations(
+                _board.Size,
+                _board.Stacks[square].size(),
+                dropInfo.numTraversable(),
+                dropInfo.includeFlattening());
 
             for (DropCombination dropCombination : dropCombinations) {
               StackMove stackMove = new StackMove(square, direction, dropCombination);
@@ -81,9 +87,8 @@ public class MoveGenerator {
   }
 
   private DropInfo getDropInfo(int square, Direction direction) {
-    long blockers =
-        _board.StandingStones[_board.SideToMove.getOppositeSide().ordinal()]
-            | _board.Capstones[_board.SideToMove.getOppositeSide().ordinal()];
+    long blockers = _board.StandingStones[_board.SideToMove.getOppositeSide().ordinal()]
+        | _board.Capstones[_board.SideToMove.getOppositeSide().ordinal()];
     long squareBit = BitHelper.fromSquare(square);
     long capstone = (_board.Capstones[_board.SideToMove.ordinal()] & squareBit);
     long squaresToTraverse = 0;
@@ -122,24 +127,28 @@ public class MoveGenerator {
     return new DropInfo(Long.bitCount(squaresToTraverse), includeFlattening);
   }
 
-  // private List<Integer> getStackTraversableSquares(int square, Direction direction, long
+  // private List<Integer> getStackTraversableSquares(int square, Direction
+  // direction, long
   // blockers) {
-  //  int stackSize = _board.Stacks[square].size();
-  //  long movementBits = Tables.getLineSegment(_board.Size, square, direction, stackSize);
-  //  System.out.println(BitHelper.bitboardToString(movementBits, _board.Size));
+  // int stackSize = _board.Stacks[square].size();
+  // long movementBits = Tables.getLineSegment(_board.Size, square, direction,
+  // stackSize);
+  // System.out.println(BitHelper.bitboardToString(movementBits, _board.Size));
 
-  //  if ((movementBits & blockers) != 0) {
-  //    int blockerIndex =
-  //        direction == Direction.North || direction == Direction.West
-  //            ? Long.numberOfLeadingZeros(movementBits)
-  //            : Long.numberOfTrailingZeros(movementBits);
-  //    movementBits &= ~Tables.getLineRay(blockerIndex, square, Direction.North);
-  //  }
+  // if ((movementBits & blockers) != 0) {
+  // int blockerIndex =
+  // direction == Direction.North || direction == Direction.West
+  // ? Long.numberOfLeadingZeros(movementBits)
+  // : Long.numberOfTrailingZeros(movementBits);
+  // movementBits &= ~Tables.getLineRay(blockerIndex, square, Direction.North);
+  // }
 
-  //  List<Integer> traversableSquares = new ArrayList<>();
-  //  boolean shouldIterateByMsb = direction == Direction.North || direction == Direction.West;
-  //  BitHelper.iterateBits(movementBits, shouldIterateByMsb, traversableSquares::add);
+  // List<Integer> traversableSquares = new ArrayList<>();
+  // boolean shouldIterateByMsb = direction == Direction.North || direction ==
+  // Direction.West;
+  // BitHelper.iterateBits(movementBits, shouldIterateByMsb,
+  // traversableSquares::add);
 
-  //  return traversableSquares;
+  // return traversableSquares;
   // }
 }

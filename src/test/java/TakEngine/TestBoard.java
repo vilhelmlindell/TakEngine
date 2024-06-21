@@ -3,6 +3,7 @@ package TakEngine;
 import static org.junit.jupiter.api.Assertions.*;
 
 import TakEngine.Moves.IMove;
+import TakEngine.Moves.MoveGenerator;
 import TakEngine.Moves.PlaceMove;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -10,10 +11,10 @@ import org.junit.jupiter.api.Test;
 public class TestBoard {
   // @Test
   // public void testGenerateMoves() {
-  //  Board board = new Board(5);
-  //  board.generateMoves();
-  //  List<IMove> moves = board.generateMoves();
-  //  assertNotNull(moves);
+  // Board board = new Board(5);
+  // board.generateMoves();
+  // List<IMove> moves = board.generateMoves();
+  // assertNotNull(moves);
   // }
 
   @Test
@@ -26,7 +27,8 @@ public class TestBoard {
     board.addStone(18, new Stone(StoneType.FlatStone, Side.White));
     board.addStone(19, new Stone(StoneType.FlatStone, Side.White));
     // System.out.println("Board:");
-    // System.out.println(BitHelper.bitboardToString(board.OccupiedSquares, board.Size));
+    // System.out.println(BitHelper.bitboardToString(board.OccupiedSquares,
+    // board.Size));
     assertTrue(board.isGameWon());
   }
 
@@ -40,7 +42,8 @@ public class TestBoard {
     board.addStone(19, new Stone(StoneType.FlatStone, Side.White));
     board.addStone(24, new Stone(StoneType.FlatStone, Side.White));
     // System.out.println("Board:");
-    // System.out.println(BitHelper.bitboardToString(board.OccupiedSquares, board.Size));
+    // System.out.println(BitHelper.bitboardToString(board.OccupiedSquares,
+    // board.Size));
     assertTrue(board.isGameWon());
   }
 
@@ -55,21 +58,36 @@ public class TestBoard {
   }
 
   @Test
-  public void testMovement() {
+  public void testStackMoveGeneration() {
     Board board = new Board(5);
-    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
-    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
-    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
-    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
-    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
-    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
-    board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
-    List<IMove> movements = board.generateMoves();
-    for (IMove move : movements) {
-      if (!(move instanceof PlaceMove)) {
-        System.out.println(move.toString());
-      }
+    Stone stone = new Stone(StoneType.FlatStone, Side.White);
+    PlaceMove placement = new PlaceMove(13, stone);
+    board.place(placement);
+    board.place(placement);
+    board.place(placement);
+    board.place(placement);
+    List<IMove> moves = board.generateMoves();
+    for (IMove move : moves) {
+      System.out.println(move);
     }
-    assertTrue(true);
   }
+
+  // @Test
+  // public void testMovement() {
+  // Board board = new Board(5);
+  // board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+  // board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+  // board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+  // board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+  // board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+  // board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+  // board.addStone(9, new Stone(StoneType.FlatStone, Side.White));
+  // List<IMove> movements = board.generateMoves();
+  // for (IMove move : movements) {
+  // if (!(move instanceof PlaceMove)) {
+  // System.out.println(move.toString());
+  // }
+  // }
+  // assertTrue(true);
+  // }
 }

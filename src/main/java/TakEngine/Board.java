@@ -12,7 +12,6 @@ public final class Board {
 
   public final int Size;
   public final int SquareCount;
-  public final ArrayList<Stone>[] Stacks;
   public final int[][] FlatStones;
   public final long[] Capstones = new long[Sides];
   public final long[] StandingStones = new long[Sides];
@@ -31,15 +30,7 @@ public final class Board {
     Size = configuration.Size;
     SquareCount = Size * Size;
 
-    AvailableCapstones = new int[] {configuration.Capstones, configuration.Capstones};
-    AvailableNormalStones = new int[] {configuration.NormalStones, configuration.NormalStones};
-
-    // @SuppressWarnings("unchecked")
-    Stacks = new ArrayList[SquareCount];
-
-    for (int square = 0; square < Stacks.length; square++) {
-      Stacks[square] = new ArrayList<>();
-    }
+    AvailableCapstones = new int[] { configuration.Capstones, configuration.Capstones };
     FlatStones = new int[Sides][SquareCount];
 
     MoveGenerator = new MoveGenerator(this);
@@ -65,78 +56,42 @@ public final class Board {
     if (move instanceof PlaceMove placement) {
       switch (placement.Stone.getStoneType()) {
         case Capstone -> {
-          Capstones[SideToMove.ordinal()] =
-              BitHelper.clearBit(Capstones[SideToMove.ordinal()], placement.Square);
+          Capstones[SideToMove.ordinal()] = BitHelper.clearBit(Capstones[SideToMove.ordinal()], placement.Square);
         }
         case FlatStone -> {
-          StandingStones[SideToMove.ordinal()] =
-              BitHelper.clearBit(StandingStones[SideToMove.ordinal()], placement.Square);
+          StandingStones[SideToMove.ordinal()] = BitHelper.clearBit(StandingStones[SideToMove.ordinal()],
+              placement.Square);
         }
         case StandingStone -> {
           FlatStones[SideToMove.ordinal()][placement.Square] = 0;
         }
       }
     } else if (move instanceof StackMove movement) {
-      int originalStack = 0;
-      int originalStackSize = 0;
-      for (int i = movement.DropCombination.Length; i >= 0; i--) {
-        int stoneCount = movement.DropCombination.get(i);
-        originalStackSize += stoneCount;
-        int square = movement.Square + movement.Direction.getShiftAmount(Size) * i;
-      }
-      move(movement);
+      // int originalStack = 0;
+      // int originalStackSize = 0;
+      // for (int i = movement.DropCombination.Length; i >= 0; i--) {
+      // int stoneCount = movement.DropCombination.get(i);
+      // originalStackSize += stoneCount;
+      // int square = movement.Square + movement.Direction.getShiftAmount(Size) * i;
+      // }
+      // move(movement);
     }
-  }
 
-  public void addStones(int square, ArrayList<Stone> stones) {
-    Stacks[square].addAll(stones);
-    updateBitboards(square, stones.get(stones.size() - 1), false);
+    // if (isRemoval) {
+    // }
   }
 
   public void addStone(int square, Stone stone) {
-    // NOTE: might be ineffective and need to change later
-    addStones(square, new ArrayList<>(List.of(new Stone[] {stone})));
-  }
-
-  public void removeStone(int square) {
-    removeStones(square, 1);
-  }
-
-  public ArrayList<Stone> removeStones(int square, int count) {
-    var removedStones =
-        Stacks[square].subList(Stacks[square].size() - count, Stacks[square].size());
-    updateBitboards(square, Stacks[square].get(Stacks[square].size() - 1), true);
-    return (ArrayList<Stone>) removedStones;
-  }
-
-  private void updateBitboards(int square, Stone stone, boolean isRemoval) {
-    if (isRemoval) {
-      ControlledSquares[SideToMove.ordinal()] =
-          BitHelper.clearBit(ControlledSquares[stone.getSide().ordinal()], square);
-    } else {
-      ControlledSquares[SideToMove.ordinal()] =
-          BitHelper.setBit(ControlledSquares[stone.getSide().ordinal()], square);
-    }
-    OccupiedSquares = BitHelper.flipBit(OccupiedSquares, square);
+    BitHelper.setBit(OccupiedSquares, square);
+    BitHelper.setBit(ControlledSquares[SideToMove.ordinal()], square);
     switch (stone.getStoneType()) {
-      case FlatStone -> {
-        FlatStones[SideToMove.ordinal()][square] =
-            BitHelper.flipBit(
-                FlatStones[stone.getSide().ordinal()][square], Stacks[square].size() - 1);
-      }
-      case StandingStone -> {
-        StandingStones[SideToMove.ordinal()] =
-            BitHelper.flipBit(StandingStones[stone.getSide().ordinal()], square);
-      }
-      case Capstone -> {
-        Capstones[SideToMove.ordinal()] =
-            BitHelper.flipBit(Capstones[stone.getSide().ordinal()], square);
-      }
+      case FlatStone:
+      case StandingStone:
+      case Capstone:
     }
   }
 
   public void place(PlaceMove placement) {
-    addStone(placement.Square, placement.Stone);
     if (placement.Stone.getStoneType() == StoneType.Capstone) {
       AvailableCapstones[placement.Stone.getSide().ordinal()] -= 1;
     } else {
@@ -144,23 +99,24 @@ public final class Board {
     }
   }
 
-  public void move(StackMove stackMove) {
-    List<Stone> stonesToTake =
-        removeStones(
-            stackMove.Square, Stacks[stackMove.Square].size() - stackMove.DropCombination.get(0));
-    int squareCount = 1;
-    for (int stonesToLeave : stackMove.DropCombination) {
-      int directionalOffset = stackMove.Direction.getShiftAmount(Size) * squareCount;
-      int square = stackMove.Square + directionalOffset;
-      ArrayList<Stone> stonesToAdd = (ArrayList<Stone>) stonesToTake.subList(0, stonesToLeave);
-      addStones(square, stonesToAdd);
-      squareCount += 1;
-    }
-  }
+  // public void move(StackMove stackMove) {
+  // List<Stone> stonesToTake = removeStones(
+  // stackMove.Square, Stacks[stackMove.Square].size() -
+  // stackMove.DropCombination.get(0));
+  // int squareCount = 1;
+  // for (int stonesToLeave : stackMove.DropCombination) {
+  // int directionalOffset = stackMove.Direction.getShiftAmount(Size) *
+  // squareCount;
+  // int square = stackMove.Square + directionalOffset;
+  // ArrayList<Stone> stonesToAdd = (ArrayList<Stone>) stonesToTake.subList(0,
+  // stonesToLeave);
+  // addStones(square, stonesToAdd);
+  // squareCount += 1;
+  // }
+  // }
 
   public boolean getLongestLineLength() {
-    long controlledSquares =
-        ControlledSquares[SideToMove.ordinal()] ^ StandingStones[SideToMove.ordinal()];
+    long controlledSquares = ControlledSquares[SideToMove.ordinal()] ^ StandingStones[SideToMove.ordinal()];
 
     // System.out.println("1");
     // Check for vertical win
@@ -227,14 +183,11 @@ public final class Board {
   }
 
   public boolean isGameWon() {
-    long controlledSquares =
-        ControlledSquares[SideToMove.ordinal()] ^ StandingStones[SideToMove.ordinal()];
+    long controlledSquares = ControlledSquares[SideToMove.ordinal()] ^ StandingStones[SideToMove.ordinal()];
 
-    // System.out.println("1");
     // Check for vertical win
     int previousStoneSquare = 0;
     for (int rankIndex = 0; rankIndex < Size; rankIndex++) {
-      // System.out.println("2");
       long rank = Tables.getRank(Size, rankIndex);
       long controlledStone = (rank & controlledSquares);
       int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
@@ -244,13 +197,11 @@ public final class Board {
         break;
       }
 
-      // System.out.println("5");
       int shiftedStoneSquare = stoneSquare + Direction.North.getShiftAmount(Size);
       if (shiftedStoneSquare < 0) {
         return true;
       }
       long stoneLine = Tables.getLineBetweenSquares(Size, previousStoneSquare, shiftedStoneSquare);
-      // System.out.println("4");
 
       previousStoneSquare = stoneSquare;
 
@@ -265,12 +216,9 @@ public final class Board {
     }
     // Check for horizontal win
     for (int fileIndex = 0; fileIndex < Size; fileIndex++) {
-      // System.out.println("3");
       long file = Tables.getFile(Size, fileIndex);
       long controlledStone = (file & controlledSquares);
       int stoneSquare = Long.numberOfTrailingZeros(controlledStone);
-      // System.out.println(BitHelper.bitboardToString(controlledStone, Size));
-      // System.out.println(BitHelper.bitboardToString(file, Size));
 
       // Check if rank has a controlled stone
       if (controlledStone == 0) {
@@ -296,7 +244,7 @@ public final class Board {
 
   @Override
   public String toString() {
-    char[] lettersByStoneType = new char[] {'c', 'f', 's'};
+    char[] lettersByStoneType = new char[] { 'c', 'f', 's' };
 
     String[] stackStrings = new String[Stacks.length];
 

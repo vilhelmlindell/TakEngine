@@ -47,6 +47,10 @@ public class BitHelper {
     return value & (1L << bitIndex);
   }
 
+  public static boolean isBitSet(long value, int bitIndex) {
+    return (value & (1L << bitIndex)) != 0;
+  }
+
   public static int setBit(int value, int bitIndex) {
     return value | (1 << bitIndex);
   }

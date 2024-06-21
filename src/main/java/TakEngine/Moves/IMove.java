@@ -1,3 +1,4 @@
 package TakEngine.Moves;
 
-public interface IMove { }
+public interface IMove {
+}
